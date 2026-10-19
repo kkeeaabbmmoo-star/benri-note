@@ -1,0 +1,6 @@
+# secrets / plain entries must never be committed
+benri-note-secret/
+*.secret
+passphrase.txt
+entries/
+*.plain.json

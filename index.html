@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="便利ノート">
+<meta name="theme-color" content="#d9f7ee">
+<meta name="robots" content="noindex,nofollow">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<title>便利ノート</title>
+<style>
+:root{--mint:#3cc9a3;--mint2:#d9f7ee;--mint3:#effcf7;--pink:#ff7aa8;--pink2:#ffe3ee;--ink:#2f3a45;--sub:#6b7a86;--card:#fff;--line:#e3eef0;--org:#ff9f43;--blue:#4aa3ff}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:linear-gradient(180deg,#e6faf3 0%,#fff3f8 60%,#fff 100%) fixed;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Maru Gothic ProN","Hiragino Sans","Noto Sans JP",sans-serif;font-size:16px;line-height:1.5}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+a{color:#e0568a}
+.hide{display:none!important}
+/* lock */
+#lock{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center}
+#lock img{width:112px;height:112px;border-radius:26px;box-shadow:0 8px 24px #3cc9a344}
+#lock h1{margin:18px 0 4px;font-size:28px;letter-spacing:.05em}
+#lock p{color:var(--sub);margin:4px 0 20px;font-size:15px}
+#pw{width:100%;max-width:320px;font-size:22px;padding:14px 16px;border-radius:16px;border:2px solid var(--mint);text-align:center;letter-spacing:.12em;background:#fff;outline:none}
+#pw:focus{border-color:var(--pink)}
+#unlock{margin-top:14px;width:100%;max-width:320px;padding:14px;border-radius:16px;background:linear-gradient(90deg,var(--mint),#5fd8b6);color:#fff;font-weight:700;font-size:18px;box-shadow:0 6px 16px #3cc9a355}
+#lockMsg{min-height:24px;margin-top:12px;color:#e0568a;font-size:14px}
+/* header */
+header{position:sticky;top:0;z-index:20;background:rgba(239,252,247,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:calc(env(safe-area-inset-top) + 8px) 12px 8px;border-bottom:1px solid var(--line)}
+.hrow{display:flex;align-items:center;gap:6px}
+.logo{font-weight:800;font-size:18px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.logo small{font-weight:600;color:var(--pink);font-size:12px;margin-left:4px}
+.ib{flex:none;width:38px;height:38px;border-radius:12px;background:#fff;border:1px solid var(--line);font-size:18px;display:flex;align-items:center;justify-content:center}
+.ib:disabled{opacity:.35}
+#dateBtn{flex:none;padding:0 8px;height:40px;border-radius:12px;background:#fff;border:1px solid var(--line);font-size:14px;white-space:nowrap;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1}#dateBtn small{font-size:10.5px;color:var(--sub);font-weight:700}
+/* weather strip */
+#wx{display:flex;gap:6px;align-items:stretch}
+.wxc{flex:1;min-width:0;background:#fff;border:1px solid var(--line);border-radius:14px;padding:6px 8px;text-align:left}
+.wxc .t{font-size:12px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wxc .m{display:flex;align-items:center;gap:4px;font-weight:700;font-size:15px;white-space:nowrap}
+.wxc .m .ic{font-size:20px}
+.wxc .m .hi{color:#e65a5a}.wxc .m .lo{color:#3d8be0}
+.wxc .m .rp{font-size:12px;color:#3d8be0;font-weight:600}
+.wxc .h{font-size:11.5px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#wxDay{font-size:11px;padding:0 6px;border-radius:10px;background:var(--pink2);color:#d0477a;font-weight:700;writing-mode:vertical-rl;letter-spacing:.1em}
+#wxMore{margin-top:8px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:8px 10px;font-size:13px}
+#wxMore table{width:100%;border-collapse:collapse;font-size:12px;text-align:center;margin:4px 0 8px}
+#wxMore td,#wxMore th{padding:2px 1px;border-bottom:1px solid #f0f4f5}
+#wxMore th{color:var(--sub);font-weight:600}
+#wxMore .cap{font-weight:700;margin-top:4px}
+#wxMore .note{color:var(--sub);font-size:12px}
+/* progress */
+#prog{margin-top:8px;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700}
+.bar{flex:1;height:10px;border-radius:6px;background:#e9f2f1;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--mint),var(--pink));border-radius:6px;transition:width .3s}
+main{padding:10px 12px calc(env(safe-area-inset-bottom) + 40px);max-width:640px;margin:0 auto}
+/* message */
+.msg{background:linear-gradient(135deg,#fff 0%,#fff5f9 100%);border:2px solid var(--pink2);border-radius:20px;padding:12px 14px;display:flex;gap:10px}
+.msg .av{font-size:30px;line-height:1}
+.msg p{margin:0;font-size:15px}
+.top3{margin-top:12px;background:#fff;border:2px solid #ffd2e2;border-radius:20px;padding:10px 12px}
+.top3 h3{margin:0 0 6px;font-size:15px;color:#d0477a}
+.t3{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px dashed #ffe0ea}
+.t3:first-of-type{border-top:0}
+.t3 .n{width:24px;height:24px;border-radius:50%;background:var(--pink);color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex:none}
+.t3 .tt{flex:1;font-size:14.5px;font-weight:600}
+.t3.done .tt{text-decoration:line-through;color:#a3aeb6}
+.t3 .go{font-size:12px;color:var(--sub);flex:none}
+/* sections */
+section.sec{margin-top:14px;background:var(--card);border-radius:20px;border:1px solid var(--line);box-shadow:0 2px 10px #3cc9a314;overflow:hidden}
+.sh{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--mint3);border-bottom:1px solid var(--line)}
+.sh .e{font-size:22px}
+.sh h2{margin:0;font-size:17px;flex:1}
+.cnt{font-size:13px;font-weight:800;color:#1f9e7d;background:#fff;border:1px solid #bfeedd;border-radius:999px;padding:2px 9px}
+.cnt.all{background:var(--mint);color:#fff;border-color:var(--mint)}
+.allb{font-size:12px;color:var(--sub);border:1px solid var(--line);background:#fff;border-radius:10px;padding:4px 8px}
+section.carry .sh{background:#fff4e6}
+section.carry .cnt{color:#d07a16;border-color:#ffd9a8}
+.items{padding:2px 0}
+.it{display:flex;gap:10px;padding:11px 12px;border-top:1px solid #f1f5f6;align-items:flex-start}
+.it:first-child{border-top:0}
+.cb{flex:none;width:44px;height:44px;border-radius:14px;border:2.5px solid #b9e8da;background:#fff;display:flex;align-items:center;justify-content:center;font-size:24px;color:#fff;transition:all .15s}
+.cb:active{transform:scale(.92)}
+.it.on .cb{background:var(--mint);border-color:var(--mint)}
+.ib2{flex:1;min-width:0}
+.ttl{font-weight:700;font-size:15.5px;line-height:1.35}
+.dt{font-size:13.5px;color:#55636e;margin-top:3px}
+.meta{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px;align-items:center}
+.bd{font-size:11.5px;font-weight:700;border-radius:999px;padding:2px 8px;white-space:nowrap}
+.f-check{background:#e3f1ff;color:#2f7fd1}
+.f-prio{background:#ffe0ea;color:#d63d74}
+.f-forget{background:#fff0dc;color:#c66d0b}
+.p-high{background:#ff7aa8;color:#fff}
+.from{background:#f1f3f5;color:#6b7a86}
+.lk{font-size:12.5px;font-weight:600;text-decoration:none;border:1px solid #ffc6da;border-radius:999px;padding:1px 8px}
+.st{font-size:11.5px;color:#9aa6ae}
+.done{border-top:1px solid var(--line);background:#fafcfc}
+.done summary{list-style:none;padding:9px 12px;font-size:14px;font-weight:700;color:#1f9e7d;cursor:pointer;display:flex;align-items:center;gap:6px}
+.done summary::-webkit-details-marker{display:none}
+.done summary::after{content:"▾";margin-left:auto;color:var(--sub);transition:transform .2s}
+.done[open] summary::after{transform:rotate(180deg)}
+.done .it{opacity:.55}
+.done .it .ttl,.done .it .dt{text-decoration:line-through;text-decoration-color:#9aa6ae}
+.empty{padding:12px;color:var(--sub);font-size:14px;text-align:center}
+.yay{padding:10px 12px;font-size:14px;color:#1f9e7d;font-weight:700;text-align:center}
+/* sheet */
+.ov{position:fixed;inset:0;background:#0006;z-index:50;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:#fff;width:100%;max-width:640px;border-radius:24px 24px 0 0;padding:16px 16px calc(env(safe-area-inset-bottom) + 20px);max-height:82vh;overflow:auto}
+.sheet h3{margin:0 0 10px;font-size:18px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 2px;border-bottom:1px solid #f0f3f4;font-size:15px}
+.row select{font:inherit;padding:6px 8px;border-radius:10px;border:1px solid var(--line);background:#fff}
+.btn{width:100%;padding:13px;border-radius:14px;font-weight:700;margin-top:10px;font-size:15px}
+.btn.p{background:var(--pink);color:#fff}
+.btn.g{background:#f1f5f6}
+.dl button{display:flex;width:100%;justify-content:space-between;padding:12px 6px;border-bottom:1px solid #f0f3f4;font-size:15px}
+.dl button.cur{color:#d0477a;font-weight:800}
+.tog{width:52px;height:30px;border-radius:15px;background:#dfe7ea;position:relative;flex:none}
+.tog::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px #0003;transition:left .2s}
+.tog.on{background:var(--mint)}.tog.on::after{left:25px}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 24px);transform:translateX(-50%);background:#2f3a45;color:#fff;padding:9px 16px;border-radius:999px;font-size:14px;z-index:60;opacity:0;transition:opacity .25s;pointer-events:none}
+.toast.show{opacity:.95}
+.flash{animation:fl 1.2s}
+@keyframes fl{0%,60%{box-shadow:0 0 0 3px var(--pink)}100%{box-shadow:none}}
+.foot{text-align:center;color:#9aa6ae;font-size:12px;margin-top:22px}
+</style>
+</head>
+<body>
+<div id="lock">
+  <img src="icon-512.png" alt="">
+  <h1>便利ノート</h1>
+  <p>ゆずがまとめた、エイジだけのノートだよ🔒<br>パスワードを入れてね♡</p>
+  <input id="pw" type="text" inputmode="text" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="パスワード">
+  <button id="unlock">ひらく✨</button>
+  <div id="lockMsg"></div>
+</div>
+<div id="app" class="hide">
+  <header>
+    <div class="hrow">
+      <div class="logo">📒 便利ノート</div>
+      <button class="ib" id="prev" aria-label="前の日">‹</button>
+      <button id="dateBtn">--</button>
+      <button class="ib" id="next" aria-label="次の日">›</button>
+      <button class="ib" id="setBtn" aria-label="設定">⚙️</button>
+    </div>
+    <div id="prog"><span>✅</span><div class="bar"><i id="pbar"></i></div><span id="ptxt">0/0</span></div>
+  </header>
+  <div id="wxWrap" style="padding:10px 12px 0;max-width:640px;margin:0 auto"><button id="wx" class="hide" style="width:100%;padding:0;margin:0"></button><div id="wxMore" class="hide"></div></div>
+  <main id="main"></main>
+</div>
+<div id="ov" class="ov hide"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast"></div>
+<script>
+const VER='1.0.0';
+const SEC={health:['🩺','健康ノート'],savings:['🐷','貯金ノート'],news:['📰','ニュース・記事'],pikmin:['🌸','ピクミン'],mail:['📧','メールチェック']};
+const ORDER=['health','savings','news','pikmin','mail'];
+const FLAG={check:'今日はこれを確認して',prio:'これ優先にした方がいいよ',forget:'これ忘れてない？'};
+const LS={pw:'bn_pw',chk:'bn_chk',open:'bn_open',set:'bn_set'};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ld=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}};
+const sv=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+let CHK=ld(LS.chk,{}), OPEN=ld(LS.open,{}), SET=Object.assign({carry:7,carryNews:true},ld(LS.set,{}));
+let IDX=null, PW=null, CUR=null, ENT={}, KEYS={}, wxDay=null, wxOpen=false;
+const jstToday=()=>new Date(Date.now()+9*3600e3).toISOString().slice(0,10);
+const wd=d=>'日月火水木金土'[new Date(d+'T12:00:00Z').getUTCDay()];
+const md=d=>{const[,m,dd]=d.split('-');return `${+m}/${+dd}`};
+const dayDiff=(a,b)=>Math.round((Date.parse(a)-Date.parse(b))/864e5);
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),1600)}
+const ub=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+async function key(pw,salt,iter){const k=salt+'|'+iter;if(KEYS[k])return KEYS[k];
+  const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveKey']);
+  return KEYS[k]=await crypto.subtle.deriveKey({name:'PBKDF2',hash:'SHA-256',salt:ub(salt),iterations:iter},base,{name:'AES-GCM',length:256},false,['decrypt'])}
+async function fetchJSON(u){const r=await fetch(u,{cache:'no-store'});if(!r.ok)throw new Error(r.status);return r.json()}
+async function getEntry(d){if(ENT[d])return ENT[d];
+  const x=await fetchJSON(`data/${d}.enc?t=${Date.now()}`);
+  const k=await key(PW,x.salt,x.iter);
+  const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:ub(x.iv),additionalData:new TextEncoder().encode(x.aad||'')},k,ub(x.ct));
+  return ENT[d]=JSON.parse(new TextDecoder().decode(pt))}
+const norm=s=>(s||'').trim().toLowerCase().replace(/[\s\-ー－]/g,'');
+async function tryUnlock(pw,silent){
+  $('#lockMsg').textContent=silent?'':'ひらいてるよ…🔑';
+  try{IDX=await fetchJSON('data/index.json?t='+Date.now())}catch(e){$('#lockMsg').textContent='データが読めなかったの…電波を確認してね📶';return false}
+  if(!IDX.dates.length){$('#lockMsg').textContent='まだノートがないよ';return false}
+  PW=pw;ENT={};KEYS={};
+  try{await getEntry(IDX.dates[IDX.dates.length-1])}catch(e){PW=null;
+    if(String(e.message).match(/^\d+$/)){$('#lockMsg').textContent='データが読めなかったの…📶';return false}
+    $('#lockMsg').textContent=silent?'':'パスワードがちがうみたい…もう一回ためしてね🥺';if(silent)localStorage.removeItem(LS.pw);return false}
+  localStorage.setItem(LS.pw,pw);
+  $('#lock').classList.add('hide');$('#app').classList.remove('hide');
+  const t=jstToday();CUR=IDX.dates.includes(t)?t:IDX.dates[IDX.dates.length-1];
+  await render();return true}
+$('#unlock').onclick=()=>{const v=norm($('#pw').value);if(v)tryUnlock(v)};
+$('#pw').addEventListener('keydown',e=>{if(e.key==='Enter')$('#unlock').click()});
+function isOn(id){return !!CHK[id]}
+function toggle(id){if(CHK[id])delete CHK[id];else CHK[id]=Date.now();sv(LS.chk,CHK);render(true);if(CHK[id])toast('やったね♡ チェックしたよ✅')}
+function itemHTML(it,opt={}){
+  const on=isOn(it.id);let b='';
+  if(it.priority==='high')b+=`<span class="bd p-high">⭐ 優先</span>`;
+  if(it.flag&&FLAG[it.flag])b+=`<span class="bd f-${it.flag}">${FLAG[it.flag]}</span>`;
+  if(opt.from)b+=`<span class="bd from">${esc(opt.from)}</span>`;
+  if(it.link)b+=`<a class="lk" href="${esc(it.link)}" target="_blank" rel="noopener">ひらく↗</a>`;
+  if(on)b+=`<span class="st">${new Date(CHK[it.id]).toLocaleString('ja-JP',{timeZone:'Asia/Tokyo',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})} ✓</span>`;
+  return `<div class="it ${on?'on':''}" id="i-${esc(it.id)}${opt.from?'-c':''}"><button class="cb" data-id="${esc(it.id)}" aria-label="${on?'まだにもどす':'やった'}">${on?'✓':''}</button>
+  <div class="ib2"><div class="ttl">${esc(it.title)}</div>${it.detail?`<div class="dt">${esc(it.detail)}</div>`:''}${b?`<div class="meta">${b}</div>`:''}</div></div>`}
+function sectionHTML(key,emoji,title,items,opt={}){
+  const todo=items.filter(x=>!isOn(x.it.id)),done=items.filter(x=>isOn(x.it.id));
+  const n=items.length,c=done.length,ok='o-'+(opt.okey||key);
+  let h=`<section class="sec ${opt.cls||''}" id="s-${key}"><div class="sh"><span class="e">${emoji}</span><h2>${title}</h2>`;
+  if(todo.length>1&&!opt.noAll)h+=`<button class="allb" data-all="${key}">全部チェック</button>`;
+  h+=`<span class="cnt ${n&&c===n?'all':''}">${c}/${n}</span></div><div class="items">`;
+  h+=todo.length?todo.map(x=>itemHTML(x.it,x)).join(''):(n?`<div class="yay">ぜんぶ終わったね！えらい〜🎉</div>`:`<div class="empty">今日はなにもないよ</div>`);
+  h+='</div>';
+  if(done.length)h+=`<details class="done" data-ok="${ok}" ${OPEN[ok]?'open':''}><summary>✅ 済み（${done.length}）</summary>${done.map(x=>itemHTML(x.it,x)).join('')}</details>`;
+  return h+'</section>'}
+const WI=w=>/雷/.test(w)?'⛈️':/雪/.test(w)?'❄️':/晴.*(雨)|雨.*晴/.test(w)?'🌦️':/雨/.test(w)?'🌧️':/晴.*曇|曇.*晴/.test(w)?'⛅':/晴/.test(w)?'☀️':/曇/.test(w)?'☁️':'🌈';
+function wxPart(d,h){const s=(d.slots||[]).find(x=>x.t===h);return s?WI(s.w):'–'}
+function renderWx(e){const w=e.weather,el=$('#wx'),m=$('#wxMore');
+  if(!w||!w.cities){el.classList.add('hide');m.classList.add('hide');return}
+  const days=w.cities[0].days.map(d=>d.date);if(!wxDay||!days.includes(wxDay))wxDay=w.primary&&days.includes(w.primary)?w.primary:days[0];
+  const lbl=wxDay===e.date?'今日':(dayDiff(wxDay,e.date)===1?'明日':md(wxDay));
+  el.innerHTML=`<span id="wxDay">${lbl}</span>`+w.cities.map(c=>{const d=c.days.find(x=>x.date===wxDay)||c.days[0];
+    const rp=(d.rain||[]).filter(x=>/\d/.test(x)).map(x=>parseInt(x));const mx=rp.length?Math.max(...rp):null;
+    return `<div class="wxc"><div class="t">${esc(c.name)}${c.name==='韮崎市'?' 💼':' 🏠'}</div><div class="m"><span class="ic">${WI(d.telop)}</span><span class="hi">${d.high}°</span><span class="lo">${d.low}°</span>${mx!=null?`<span class="rp">☂${mx}%</span>`:''}</div><div class="h">朝${wxPart(d,'09')} 昼${wxPart(d,'15')} 夕${wxPart(d,'18')}</div></div>`}).join('');
+  el.classList.remove('hide');
+  if(wxOpen){m.innerHTML=`<div style="display:flex;gap:6px;margin-bottom:6px">${days.map(d=>`<button class="allb" data-wxd="${d}" style="${d===wxDay?'background:#ffe3ee;color:#d0477a;font-weight:700':''}">${d===e.date?'今日':dayDiff(d,e.date)===1?'明日':''} ${md(d)}（${wd(d)}）</button>`).join('')}</div>`+
+   w.cities.map(c=>{const d=c.days.find(x=>x.date===wxDay)||c.days[0];return `<div class="cap">${esc(c.label||c.name)}：${esc(d.telop)}　最高${d.high}° / 最低${d.low}°　UV ${esc(d.uv||'—')}</div>
+   <div class="note">降水確率 0-6時 ${d.rain[0]}・6-12時 ${d.rain[1]}・12-18時 ${d.rain[2]}・18-24時 ${d.rain[3]}</div>
+   <table><tr><th>時</th>${d.slots.map(s=>`<th>${s.t}</th>`).join('')}</tr><tr><td></td>${d.slots.map(s=>`<td>${WI(s.w)}</td>`).join('')}</tr><tr><td>℃</td>${d.slots.map(s=>`<td>${Math.round(s.temp)}</td>`).join('')}</tr><tr><td>☂</td>${d.slots.map(s=>`<td>${s.pop==='---'?'–':s.pop+'%'}</td>`).join('')}</tr></table>`}).join('')+
+   `<div class="note">${esc(w.note||'')}<br>出典：${esc(w.source||'')}　${w.cities.map(c=>`<a href="${esc(c.link)}" target="_blank" rel="noopener">${esc(c.name)}</a>`).join('・')}</div>`;m.classList.remove('hide')}else m.classList.add('hide')}
+async function carryItems(e){
+  if(!(CUR===IDX.dates[IDX.dates.length-1]||CUR===jstToday())||!SET.carry)return [];
+  const prev=IDX.dates.filter(d=>d<CUR&&dayDiff(CUR,d)<=SET.carry).reverse();const out=[];
+  for(const d of prev){let x;try{x=await getEntry(d)}catch(err){continue}
+    for(const s of x.sections){if(s.key==='news'&&!SET.carryNews)continue;
+      for(const it of s.items){const done=isOn(it.id);
+        if(!done||(CHK[it.id]>=Date.parse(CUR+'T00:00:00+09:00')))out.push({it,from:`${md(d)} ${SEC[s.key]?.[0]||''}`})}}}
+  return out}
+async function render(keep){
+  const y=scrollY;const e=await getEntry(CUR);const i=IDX.dates.indexOf(CUR);
+  $('#prev').disabled=i<=0;$('#next').disabled=i>=IDX.dates.length-1;
+  $('#dateBtn').innerHTML=`<b>${md(CUR)}(${wd(CUR)})</b><small>${CUR===jstToday()?'<span style="color:#e0568a">今日</span>':'日付'} ▾</small>`;
+  renderWx(e);
+  const secs=ORDER.map(k=>e.sections.find(s=>s.key===k)).filter(Boolean);
+  const all=secs.flatMap(s=>s.items);const c=all.filter(x=>isOn(x.id)).length;
+  $('#pbar').style.width=(all.length?c/all.length*100:0)+'%';$('#ptxt').textContent=`${c}/${all.length}`;
+  const byId=Object.fromEntries(all.map(x=>[x.id,x]));
+  let h=`<div class="msg"><div class="av">🍊</div><p>${esc(e.message)}</p></div>`;
+  if(e.top3&&e.top3.length)h+=`<div class="top3"><h3>💗 今日の優先トップ3</h3>${e.top3.map((id,n)=>{const it=byId[id];if(!it)return'';return `<div class="t3 ${isOn(id)?'done':''}"><span class="n">${n+1}</span><span class="tt" data-jump="${esc(id)}">${esc(it.title)}</span><button class="cb" style="width:36px;height:36px;font-size:19px;${isOn(id)?'background:var(--mint);border-color:var(--mint)':''}" data-id="${esc(id)}">${isOn(id)?'✓':''}</button></div>`}).join('')}</div>`;
+  const co=await carryItems(e);
+  if(co.length)h+=sectionHTML('carry','⏩','前日からの持ち越し',co,{cls:'carry',noAll:false});
+  for(const s of secs)h+=sectionHTML(s.key,SEC[s.key][0],SEC[s.key][1],s.items.map(it=>({it})));
+  h+=`<div class="foot">便利ノート v${VER}・ゆずより愛をこめて💕<br>${e.generated?'作成 '+esc(e.generated.replace('T',' ').slice(0,16)):''}</div>`;
+  $('#main').innerHTML=h;if(keep)scrollTo(0,y)}
+document.addEventListener('click',ev=>{const t=ev.target.closest('[data-id],[data-all],[data-jump],[data-wxd],#wx,#prev,#next,#dateBtn,#setBtn');if(!t)return;
+  if(t.dataset.id){toggle(t.dataset.id);return}
+  if(t.dataset.all){const k=t.dataset.all;const sec=t.closest('section');const ids=[...sec.querySelectorAll('.items .cb')].map(b=>b.dataset.id);ids.forEach(id=>{if(!CHK[id])CHK[id]=Date.now()});sv(LS.chk,CHK);render(true);toast(`${ids.length}こまとめてチェックしたよ✅`);return}
+  if(t.dataset.jump){const el=document.getElementById('i-'+t.dataset.jump);if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.classList.add('flash');setTimeout(()=>el.classList.remove('flash'),1300)}return}
+  if(t.dataset.wxd){wxDay=t.dataset.wxd;render(true);return}
+  if(t.id==='wx'){wxOpen=!wxOpen;render(true);return}
+  if(t.id==='prev'||t.id==='next'){const i=IDX.dates.indexOf(CUR)+(t.id==='prev'?-1:1);if(IDX.dates[i]){CUR=IDX.dates[i];wxDay=null;render();scrollTo(0,0)}return}
+  if(t.id==='dateBtn'){openDates();return}
+  if(t.id==='setBtn'){openSet();return}});
+document.addEventListener('toggle',ev=>{const d=ev.target;if(d.matches&&d.matches('details.done')){OPEN[d.dataset.ok]=d.open;sv(LS.open,OPEN)}},true);
+function sheet(h){$('#sheet').innerHTML=h;$('#ov').classList.remove('hide')}
+$('#ov').onclick=e=>{if(e.target.id==='ov')$('#ov').classList.add('hide')};
+function openDates(){sheet(`<h3>📅 日付をえらぶ</h3><div class="dl">${IDX.dates.slice().reverse().map(d=>`<button data-d="${d}" class="${d===CUR?'cur':''}"><span>${md(d)}（${wd(d)}）${d===jstToday()?' 今日':''}</span><span>${d}</span></button>`).join('')}</div><button class="btn g" data-close>とじる</button>`);
+  $('#sheet').querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{CUR=b.dataset.d;wxDay=null;$('#ov').classList.add('hide');render();scrollTo(0,0)});$('#sheet').querySelector('[data-close]').onclick=()=>$('#ov').classList.add('hide')}
+function openSet(){sheet(`<h3>⚙️ 設定</h3>
+ <div class="row"><span>⏩ 持ち越しの期間</span><select id="sCarry">${[0,3,7,14,30].map(n=>`<option value="${n}" ${SET.carry==n?'selected':''}>${n?n+'日前まで':'表示しない'}</option>`).join('')}</select></div>
+ <div class="row"><span>📰 ニュースも持ち越す</span><button class="tog ${SET.carryNews?'on':''}" id="sNews"></button></div>
+ <div class="row"><span>🔄 最新のデータを読みこむ</span><button class="allb" id="sReload">更新</button></div>
+ <div class="row"><span>🧹 チェックを全部リセット</span><button class="allb" id="sReset">リセット</button></div>
+ <button class="btn p" id="sLogout">🔑 パスワードを変更/ログアウト</button>
+ <button class="btn g" id="sClose">とじる</button>
+ <div class="foot">v${VER}・チェックはこのiPhoneの中だけに保存されるよ</div>`);
+ $('#sCarry').onchange=e=>{SET.carry=+e.target.value;sv(LS.set,SET);render(true)};
+ $('#sNews').onclick=e=>{SET.carryNews=!SET.carryNews;e.target.classList.toggle('on',SET.carryNews);sv(LS.set,SET);render(true)};
+ $('#sReload').onclick=async()=>{ENT={};IDX=await fetchJSON('data/index.json?t='+Date.now());$('#ov').classList.add('hide');await render();toast('最新にしたよ✨')};
+ $('#sReset').onclick=()=>{if(confirm('チェックを全部「まだ」にもどす？')){CHK={};sv(LS.chk,CHK);render(true);toast('リセットしたよ')}};
+ $('#sLogout').onclick=()=>{if(confirm('ログアウトする？（チェックの記録は残るよ）')){localStorage.removeItem(LS.pw);PW=null;ENT={};KEYS={};$('#ov').classList.add('hide');$('#app').classList.add('hide');$('#lock').classList.remove('hide');$('#pw').value='';$('#lockMsg').textContent='新しいパスワードを入れてね'}};
+ $('#sClose').onclick=()=>$('#ov').classList.add('hide')}
+document.addEventListener('visibilitychange',async()=>{if(document.visibilityState==='visible'&&PW&&IDX){try{const n=await fetchJSON('data/index.json?t='+Date.now());if(n.dates.join()!==IDX.dates.join()){IDX=n;const t=jstToday();if(IDX.dates.includes(t))CUR=t;render();toast('新しいノートが届いたよ📒')}}catch(e){}}});
+if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js');
+(async()=>{const p=localStorage.getItem(LS.pw);if(p){$('#lockMsg').textContent='ひらいてるよ…🔑';await tryUnlock(p,true)}})();
+</script>
+</body>
+</html>
