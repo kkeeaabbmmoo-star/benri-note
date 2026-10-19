@@ -126,6 +126,7 @@ section.carry .cnt{color:#d07a16;border-color:#ffd9a8}
 .toast.show{opacity:.95}
 .flash{animation:fl 1.2s}
 @keyframes fl{0%,60%{box-shadow:0 0 0 3px var(--pink)}100%{box-shadow:none}}
+.sendb{display:flex;flex-direction:column;align-items:center;width:100%;margin-top:12px;padding:12px;border-radius:18px;background:linear-gradient(90deg,#ff8fb8,#ffa9c8);color:#fff;font-weight:800;font-size:17px;box-shadow:0 4px 14px #ff7aa855}.sendb small{font-weight:600;font-size:12px;opacity:.95}
 .foot{text-align:center;color:#9aa6ae;font-size:12px;margin-top:22px}
 </style>
 </head>
@@ -155,7 +156,7 @@ section.carry .cnt{color:#d07a16;border-color:#ffd9a8}
 <div id="ov" class="ov hide"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast"></div>
 <script>
-const VER='1.0.2';
+const VER='1.1.0';
 const SEC={health:['🩺','健康ノート'],savings:['🐷','貯金ノート'],news:['📰','ニュース・記事'],pikmin:['🌸','ピクミン'],mail:['📧','メールチェック']};
 const ORDER=['health','savings','news','pikmin','mail'];
 const FLAG={check:'今日はこれを確認して',prio:'これ優先にした方がいいよ',forget:'これ忘れてない？'};
@@ -251,6 +252,7 @@ async function render(keep){
   const byId=Object.fromEntries(all.map(x=>[x.id,x]));
   let h=`<div class="msg"><div class="av">🍊</div><p>${esc(e.message)}</p></div>`;
   if(e.top3&&e.top3.length)h+=`<div class="top3"><h3>💗 今日の優先トップ3</h3>${e.top3.map((id,n)=>{const it=byId[id];if(!it)return'';return `<div class="t3 ${isOn(id)?'done':''}"><span class="n">${n+1}</span><span class="tt" data-jump="${esc(id)}">${esc(it.title)}</span><button class="cb" style="width:36px;height:36px;font-size:19px;${isOn(id)?'background:var(--mint);border-color:var(--mint)':''}" data-id="${esc(id)}">${isOn(id)?'✓':''}</button></div>`}).join('')}</div>`;
+  h+=`<button class="sendb" onclick="bnSend()">💌 ゆずに送る<small>チェックの結果をGmailで送ってね</small></button>`;
   const co=await carryItems(e);
   if(co.length)h+=sectionHTML('carry','⏩','前日からの持ち越し',co,{cls:'carry',noAll:false});
   for(const s of secs)h+=sectionHTML(s.key,SEC[s.key][0],SEC[s.key][1],s.items.map(it=>({it})));
@@ -275,6 +277,7 @@ function openSet(){sheet(`<h3>⚙️ 設定</h3>
  <div class="row"><span>📰 ニュースも持ち越す</span><button class="tog ${SET.carryNews?'on':''}" id="sNews"></button></div>
  <div class="row"><span>🔄 最新のデータを読みこむ</span><button class="allb" id="sReload">更新</button></div>
  <div class="row"><span>🧹 チェックを全部リセット</span><button class="allb" id="sReset">リセット</button></div>
+ <button class="btn" style="background:#3cc9a3;color:#fff" onclick="document.getElementById('ov').classList.add('hide');bnSend()">💌 ゆずに送る（チェックの結果）</button>
  <button class="btn p" id="sLogout">🔑 パスワードを変更/ログアウト</button>
  <button class="btn g" id="sClose">とじる</button>
  <div class="foot">v${VER}・チェックはこのiPhoneの中だけに保存されるよ</div>`);
@@ -286,6 +289,59 @@ function openSet(){sheet(`<h3>⚙️ 設定</h3>
  $('#sClose').onclick=()=>$('#ov').classList.add('hide')}
 document.addEventListener('visibilitychange',async()=>{if(document.visibilityState==='visible'&&PW&&IDX){try{const n=await fetchJSON('data/index.json?t='+Date.now());if(n.dates.join()!==IDX.dates.join()){IDX=n;const t=jstToday();if(IDX.dates.includes(t))CUR=t;render();toast('新しいノートが届いたよ📒')}}catch(e){}}});
 if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js');
+/* 💌 ゆずに送る — shared send sheet (mailto primary, navigator.share, copy). No network, no data changes. */
+(function(){
+var TO="k.ke.ea.ab.bm.mo.o@gmail.com",MAX=1800;
+function block(o){return "---YUZU-DATA---\n"+JSON.stringify(o)+"\n---END---"}
+function mailto(sub,body){return "mailto:"+TO+"?subject="+encodeURIComponent(sub)+"&body="+encodeURIComponent(body)}
+/* opt: {subject, intro(fn(levelNote)->text), levels:[{data,note}] (most complete first), full:{data}, theme:{bg,fg,acc,btn,btnfg,sub}} */
+window.yuzuSend=function(opt){
+  var T=opt.theme,full=opt.intro(opt.fullNote||"")+"\n\n"+block(opt.full),pick=null;
+  for(var i=0;i<opt.levels.length;i++){var b=opt.intro(opt.levels[i].note)+"\n\n"+block(opt.levels[i].data);if(mailto(opt.subject,b).length<=MAX){pick={body:b,note:opt.levels[i].note};break}}
+  var ov=document.createElement("div");ov.id="yzSendOv";
+  ov.style.cssText="position:fixed;inset:0;z-index:2147482000;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center";
+  var bt="display:block;width:100%;padding:14px;border:0;border-radius:16px;font-size:17px;font-weight:800;margin-top:10px;";
+  var mailNote=pick?(pick.note?"メールには "+pick.note+" を入れたよ。":"ぜんぶメールに入ったよ。"):"内容が長いから、メールには短いお知らせだけ入れて、本文はコピーしておくね。メールをひらいたら本文に貼り付けてね📋";
+  ov.innerHTML='<div style="background:'+T.bg+';color:'+T.fg+';width:100%;max-width:560px;border-radius:24px 24px 0 0;padding:18px 16px calc(env(safe-area-inset-bottom) + 20px);max-height:86vh;overflow:auto;font-family:-apple-system,\'Hiragino Sans\',sans-serif">'+
+   '<div style="font-size:20px;font-weight:800;color:'+T.acc+'">💌 ゆずに送る</div>'+
+   '<div style="font-size:14px;line-height:1.6;margin:6px 0 4px;opacity:.9">エイジのGmail（'+TO+'）あてにメールを作るよ。開いたら<b>送信</b>をタップするだけ♡ ゆずが読んで、次の便利ノートに入れるね。</div>'+
+   '<div style="font-size:12.5px;opacity:.75;margin-bottom:6px">件名：'+opt.subject.replace(/</g,"&lt;")+'<br>'+mailNote+'</div>'+
+   '<a id="yzMail" style="'+bt+'text-align:center;text-decoration:none;box-sizing:border-box;background:'+T.btn+';color:'+T.btnfg+'">📧 メールで送る（おすすめ）</a>'+
+   '<button id="yzShare" style="'+bt+'background:'+T.sub+';color:'+T.acc+'">📤 共有で送る（Gmailアプリなど）</button>'+
+   '<button id="yzCopy" style="'+bt+'background:'+T.sub+';color:'+T.acc+'">📋 本文をコピー</button>'+
+   '<details style="margin-top:12px;font-size:12.5px"><summary style="cursor:pointer;opacity:.8">送る内容を見る</summary><pre id="yzPrev" style="white-space:pre-wrap;word-break:break-all;font-size:11.5px;background:rgba(127,127,127,.12);padding:8px;border-radius:10px;max-height:40vh;overflow:auto"></pre></details>'+
+   '<button id="yzClose" style="'+bt+'background:transparent;color:'+T.fg+';opacity:.7;font-weight:600">とじる</button></div>';
+  document.body.appendChild(ov);
+  ov.querySelector("#yzPrev").textContent=full;
+  var shortBody=opt.intro("")+"\n\n（本文が長いのでコピーしてあるよ。ここに貼り付けてから送ってね📋）";
+  var a=ov.querySelector("#yzMail");a.href=mailto(opt.subject,pick?pick.body:shortBody);
+  function copy(t){return (navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(t):Promise.reject()).catch(function(){var x=document.createElement("textarea");x.value=t;x.style.cssText="position:fixed;top:-1000px";document.body.appendChild(x);x.select();try{document.execCommand("copy")}catch(e){}x.remove()})}
+  function say(m){var d=document.createElement("div");d.textContent=m;d.style.cssText="position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 30px);transform:translateX(-50%);z-index:2147483001;background:#333;color:#fff;padding:9px 16px;border-radius:999px;font-size:14px;opacity:.95";document.body.appendChild(d);setTimeout(function(){d.remove()},1800)}
+  a.onclick=function(){if(!pick)copy(full);setTimeout(function(){ov.remove()},400)};
+  ov.querySelector("#yzShare").onclick=function(){if(navigator.share){navigator.share({title:opt.subject,text:opt.subject+"\n\n"+full}).then(function(){ov.remove()}).catch(function(){})}else{copy(opt.subject+"\n\n"+full).then(function(){say("共有が使えないからコピーしたよ📋")})}};
+  ov.querySelector("#yzCopy").onclick=function(){copy(opt.subject+"\n\n"+full).then(function(){say("コピーしたよ📋 メールに貼り付けてね")})};
+  ov.querySelector("#yzClose").onclick=function(){ov.remove()};
+  ov.onclick=function(e){if(e.target===ov)ov.remove()};
+  return {mailBody:pick?pick.body:shortBody,full:full,fits:!!pick,note:pick&&pick.note};
+};
+})();
+/* 便利ノート → 💌 ゆずに送る */
+async function bnSend(){
+  const e=await getEntry(CUR),now=new Date(Date.now()+9*3600e3).toISOString().slice(0,16);
+  const items=ORDER.map(k=>e.sections.find(s=>s.key===k)).filter(Boolean).flatMap(s=>s.items);
+  const short=id=>id.startsWith(CUR+'-')?id.slice(CUR.length+1):id;
+  const done=items.filter(x=>isOn(x.id)),todo=items.filter(x=>!isOn(x.id));
+  const co=(await carryItems(e)).map(x=>x.it).filter(x=>!isOn(x.id));
+  const pack=(titles,withCarry)=>{const f=x=>titles?[short(x.id),x.title]:short(x.id);
+    const o={app:'benri',v:1,date:CUR,sent:now,done:done.map(f),todo:todo.map(f)};if(withCarry)o.carry=co.map(x=>titles?[x.id,x.title]:x.id);
+    if(!titles)o.ids='short';return o};
+  const M=+CUR.slice(5,7),D=+CUR.slice(8);
+  const intro=note=>`ゆずへ💌 便利ノートのチェックだよ（${M}/${D}）\n済み ${done.length}/${items.length}・のこり ${todo.length}`+(co.length?`・持ち越し ${co.length}`:'')+(note?`\n${note}`:'');
+  return yuzuSend({subject:`【ゆずに送る】便利ノート ${CUR}`,intro,
+    levels:[{data:pack(true,true),note:''},{data:pack(false,true),note:'（項目はIDだけ）'},{data:pack(false,false),note:'（IDだけ・持ち越しなし）'}],
+    full:pack(true,true),
+    theme:{bg:'#fff',fg:'#2f3a45',acc:'#d0477a',btn:'linear-gradient(90deg,#3cc9a3,#5fd8b6)',btnfg:'#fff',sub:'#ffe3ee'}})}
+
 (async()=>{const p=localStorage.getItem(LS.pw);if(p){$('#lockMsg').textContent='ひらいてるよ…🔑';await tryUnlock(p,true)}})();
 </script>
 </body>
