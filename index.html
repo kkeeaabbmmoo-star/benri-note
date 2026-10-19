@@ -87,7 +87,8 @@ section.carry .cnt{color:#d07a16;border-color:#ffd9a8}
 .it.on .cb{background:var(--mint);border-color:var(--mint)}
 .ib2{flex:1;min-width:0}
 .ttl{font-weight:700;font-size:15.5px;line-height:1.35}
-.dt{font-size:13.5px;color:#55636e;margin-top:3px}
+.dt{font-size:13.5px;color:#55636e;margin-top:3px;white-space:pre-line}
+#s-news .it{padding:9px 12px}#s-news .dt{font-size:13px;line-height:1.45}
 .meta{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px;align-items:center}
 .bd{font-size:11.5px;font-weight:700;border-radius:999px;padding:2px 8px;white-space:nowrap}
 .f-check{background:#e3f1ff;color:#2f7fd1}
@@ -153,7 +154,7 @@ section.carry .cnt{color:#d07a16;border-color:#ffd9a8}
 <div id="ov" class="ov hide"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast"></div>
 <script>
-const VER='1.0.0';
+const VER='1.0.1';
 const SEC={health:['🩺','健康ノート'],savings:['🐷','貯金ノート'],news:['📰','ニュース・記事'],pikmin:['🌸','ピクミン'],mail:['📧','メールチェック']};
 const ORDER=['health','savings','news','pikmin','mail'];
 const FLAG={check:'今日はこれを確認して',prio:'これ優先にした方がいいよ',forget:'これ忘れてない？'};
