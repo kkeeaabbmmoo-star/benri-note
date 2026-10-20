@@ -158,7 +158,7 @@ section.carry .cnt{color:#d07a16;border-color:#ffd9a8}
 <div id="ov" class="ov hide"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast"></div>
 <script>
-const VER='1.2.1';
+const VER='1.2.2';
 const SEC={health:['🩺','健康ノート'],savings:['🐷','貯金ノート'],news:['📰','ニュース・記事'],pikmin:['🌸','ピクミン'],mail:['📧','メールチェック']};
 const ORDER=['health','savings','news','pikmin','mail'];
 const FLAG={check:'今日はこれを確認して',prio:'これ優先にした方がいいよ',forget:'これ忘れてない？'};
@@ -287,7 +287,7 @@ function bnImportFile(f){if(!f)return;const r=new FileReader();r.onload=()=>{try
   bnClose();render(true);toast('読みこんだよ✨')}catch(x){alert('便利ノートのバックアップファイルではないみたい')}};r.readAsText(f)}
 function bnImport(){let i=document.getElementById('bnImp');if(!i){i=document.createElement('input');i.type='file';i.id='bnImp';i.accept='.json,application/json';i.style.display='none';document.body.appendChild(i);i.onchange=e=>{bnImportFile(e.target.files[0]);e.target.value=''}}i.click()}
 function bnReset(){if(confirm('チェックを全部「まだ」にもどす？')){CHK={};sv(LS.chk,CHK);render(true);toast('リセットしたよ')}}
-function bnWipe(){if(!confirm('このiPhoneのチェックと設定をすべて消す？'))return;if(!confirm('本当に消していい？もとにもどせないよ（先に書き出しがおすすめ）'))return;[LS.chk,LS.set,LS.open].forEach(k=>localStorage.removeItem(k));location.reload()}
+function bnWipe(){if(!confirm('このノートに入力した中身をすべて消す？\n（パスワードとアプリ本体は残るよ）'))return;if(!confirm('本当に消していい？もとにもどせないよ（先にバックアップの書き出しがおすすめ）'))return;[LS.chk,LS.set,LS.open].forEach(k=>localStorage.removeItem(k));location.reload()}
 function bnLogout(){if(confirm('ログアウトする？（チェックの記録は残るよ）')){localStorage.removeItem(LS.pw);PW=null;ENT={};KEYS={};bnClose();$('#app').classList.add('hide');$('#lock').classList.remove('hide');$('#pw').value='';$('#lockMsg').textContent='新しいパスワードを入れてね';scrollTo(0,0)}}
 function bottomHTML(){return `<div class="btmz">
  <div class="scard"><h4>💾 バックアップ</h4><div class="sh2">チェックと設定をファイルに保存できるよ（パスワードは入らないよ）。</div><div class="two"><button class="btn g sm2" onclick="bnExport()">JSONで書き出し</button><button class="btn g sm2" onclick="bnImport()">JSONを読み込み</button></div></div>
@@ -305,7 +305,7 @@ function openSet(){sheet(`<h3>⚙️ 設定</h3>
  <button class="btn m" id="sSend">💌 ゆずに送る（チェックの結果）</button><button class="btn m" id="sReload">💝 ゆずから受け取る（最新のノート）</button></div>
  <div class="scard"><h4>🔑 ロック</h4><div class="sh2">ログアウトしてもチェックの記録は消えないよ。</div><button class="btn p" id="sLogout">🔑 パスワードを変更/ログアウト</button></div>
  <div class="scard"><h4>⚠️ データ</h4><div class="row" style="border:0"><span>🧹 チェックを全部リセット</span><button class="allb" id="sReset">リセット</button></div>
- <button class="btn d" id="sWipe">データをすべて消す</button><div class="sh2">このiPhoneのチェックと設定だけを消すよ。ゆずのノート本体は消えないよ。</div></div>
+ <button class="btn d" id="sWipe">データをすべて消す</button><div class="sh2">2回確認するよ。チェックと設定だけ消えて、パスワードとゆずのノート本体は残るよ。</div></div>
  <button class="btn g" id="sClose">とじる</button>
  <div class="foot">便利ノート バージョン v${VER}・チェックはこのiPhoneの中だけに保存されるよ</div>`);
  const close=bnClose;
