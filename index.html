@@ -156,7 +156,7 @@ section.carry .cnt{color:#d07a16;border-color:#ffd9a8}
 <div id="ov" class="ov hide"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast"></div>
 <script>
-const VER='1.1.0';
+const VER='1.1.1';
 const SEC={health:['🩺','健康ノート'],savings:['🐷','貯金ノート'],news:['📰','ニュース・記事'],pikmin:['🌸','ピクミン'],mail:['📧','メールチェック']};
 const ORDER=['health','savings','news','pikmin','mail'];
 const FLAG={check:'今日はこれを確認して',prio:'これ優先にした方がいいよ',forget:'これ忘れてない？'};
@@ -276,9 +276,9 @@ function openSet(){sheet(`<h3>⚙️ 設定</h3>
  <div class="row"><span>⏩ 持ち越しの期間</span><select id="sCarry">${[0,3,7,14,30].map(n=>`<option value="${n}" ${SET.carry==n?'selected':''}>${n?n+'日前まで':'表示しない'}</option>`).join('')}</select></div>
  <div class="row"><span>📰 ニュースも持ち越す</span><button class="tog ${SET.carryNews?'on':''}" id="sNews"></button></div>
  <div class="row"><span>🔄 最新のデータを読みこむ</span><button class="allb" id="sReload">更新</button></div>
- <div class="row"><span>🧹 チェックを全部リセット</span><button class="allb" id="sReset">リセット</button></div>
  <button class="btn" style="background:#3cc9a3;color:#fff" onclick="document.getElementById('ov').classList.add('hide');bnSend()">💌 ゆずに送る（チェックの結果）</button>
  <button class="btn p" id="sLogout">🔑 パスワードを変更/ログアウト</button>
+ <div class="row"><span>🧹 チェックを全部リセット</span><button class="allb" id="sReset">リセット</button></div>
  <button class="btn g" id="sClose">とじる</button>
  <div class="foot">v${VER}・チェックはこのiPhoneの中だけに保存されるよ</div>`);
  $('#sCarry').onchange=e=>{SET.carry=+e.target.value;sv(LS.set,SET);render(true)};
