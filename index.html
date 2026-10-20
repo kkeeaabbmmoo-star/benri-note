@@ -118,7 +118,7 @@ section.carry .cnt{color:#d07a16;border-color:#ffd9a8}
 .btn.p{background:var(--pink);color:#fff}
 .btn.g{background:#f1f5f6}
 .btn.m{background:#3cc9a3;color:#fff}.btn.d{background:#fff;color:#e0566b;border:1.5px solid #f3b3bd}
-.scard{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:12px 14px 14px;margin-top:12px;box-shadow:0 2px 10px #3cc9a314}.scard h4{margin:0 0 4px;font-size:16px}.sh2{font-size:12.5px;color:#7b8a93;line-height:1.5;margin-top:6px}
+.scard{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:12px 14px 14px;margin-top:12px;box-shadow:0 2px 10px #3cc9a314}.two{display:flex;gap:8px}.two .btn{flex:1}.btn.sm2{padding:10px;font-size:14px}.btmz{margin-top:22px}.btmz .sendb{margin-top:8px;padding:16px;font-size:19px}.scard h4{margin:0 0 4px;font-size:16px}.sh2{font-size:12.5px;color:#7b8a93;line-height:1.5;margin-top:6px}
 .dl button{display:flex;width:100%;justify-content:space-between;padding:12px 6px;border-bottom:1px solid #f0f3f4;font-size:15px}
 .dl button.cur{color:#d0477a;font-weight:800}
 .tog{width:52px;height:30px;border-radius:15px;background:#dfe7ea;position:relative;flex:none}
@@ -158,7 +158,7 @@ section.carry .cnt{color:#d07a16;border-color:#ffd9a8}
 <div id="ov" class="ov hide"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast"></div>
 <script>
-const VER='1.2.0';
+const VER='1.2.1';
 const SEC={health:['🩺','健康ノート'],savings:['🐷','貯金ノート'],news:['📰','ニュース・記事'],pikmin:['🌸','ピクミン'],mail:['📧','メールチェック']};
 const ORDER=['health','savings','news','pikmin','mail'];
 const FLAG={check:'今日はこれを確認して',prio:'これ優先にした方がいいよ',forget:'これ忘れてない？'};
@@ -258,6 +258,7 @@ async function render(keep){
   const co=await carryItems(e);
   if(co.length)h+=sectionHTML('carry','⏩','前日からの持ち越し',co,{cls:'carry',noAll:false});
   for(const s of secs)h+=sectionHTML(s.key,SEC[s.key][0],SEC[s.key][1],s.items.map(it=>({it})));
+  h+=bottomHTML();
   h+=`<div class="foot">便利ノート v${VER}・ゆずより愛をこめて💕<br>${e.generated?'作成 '+esc(e.generated.replace('T',' ').slice(0,16)):''}</div>`;
   $('#main').innerHTML=h;if(keep)scrollTo(0,y)}
 document.addEventListener('click',ev=>{const t=ev.target.closest('[data-id],[data-all],[data-jump],[data-wxd],#wx,#prev,#next,#dateBtn,#setBtn');if(!t)return;
@@ -274,6 +275,26 @@ function sheet(h){$('#sheet').innerHTML=h;$('#ov').classList.remove('hide')}
 $('#ov').onclick=e=>{if(e.target.id==='ov')$('#ov').classList.add('hide')};
 function openDates(){sheet(`<h3>📅 日付をえらぶ</h3><div class="dl">${IDX.dates.slice().reverse().map(d=>`<button data-d="${d}" class="${d===CUR?'cur':''}"><span>${md(d)}（${wd(d)}）${d===jstToday()?' 今日':''}</span><span>${d}</span></button>`).join('')}</div><button class="btn g" data-close>とじる</button>`);
   $('#sheet').querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{CUR=b.dataset.d;wxDay=null;$('#ov').classList.add('hide');render();scrollTo(0,0)});$('#sheet').querySelector('[data-close]').onclick=()=>$('#ov').classList.add('hide')}
+const bnClose=()=>$('#ov').classList.add('hide');
+async function bnReload(){ENT={};IDX=await fetchJSON('data/index.json?t='+Date.now());bnClose();await render();toast('ゆずの最新ノートを受け取ったよ💝')}
+function bnExport(){const o={app:'benri-note',ver:VER,exported:new Date().toISOString(),data:{}};[LS.chk,LS.set,LS.open].forEach(k=>{const v=localStorage.getItem(k);if(v!=null)o.data[k]=v});
+  const bl=new Blob([JSON.stringify(o,null,1)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(bl);a.download='benri-note-backup-'+jstToday()+'.json';document.body.appendChild(a);a.click();a.remove();toast('書き出したよ💾')}
+function bnImportFile(f){if(!f)return;const r=new FileReader();r.onload=()=>{try{const j=JSON.parse(r.result);if(j.app!=='benri-note'||!j.data)throw 0;
+  if(!confirm('このバックアップを読みこむ？\n（チェックは今のものと合わせるよ。設定はバックアップのものになるよ）'))return;
+  if(j.data[LS.chk]){const c=JSON.parse(j.data[LS.chk]);for(const k in c)if(!CHK[k])CHK[k]=c[k];sv(LS.chk,CHK)}
+  if(j.data[LS.set]){SET=Object.assign(SET,JSON.parse(j.data[LS.set]));sv(LS.set,SET)}
+  if(j.data[LS.open])localStorage.setItem(LS.open,j.data[LS.open]);
+  bnClose();render(true);toast('読みこんだよ✨')}catch(x){alert('便利ノートのバックアップファイルではないみたい')}};r.readAsText(f)}
+function bnImport(){let i=document.getElementById('bnImp');if(!i){i=document.createElement('input');i.type='file';i.id='bnImp';i.accept='.json,application/json';i.style.display='none';document.body.appendChild(i);i.onchange=e=>{bnImportFile(e.target.files[0]);e.target.value=''}}i.click()}
+function bnReset(){if(confirm('チェックを全部「まだ」にもどす？')){CHK={};sv(LS.chk,CHK);render(true);toast('リセットしたよ')}}
+function bnWipe(){if(!confirm('このiPhoneのチェックと設定をすべて消す？'))return;if(!confirm('本当に消していい？もとにもどせないよ（先に書き出しがおすすめ）'))return;[LS.chk,LS.set,LS.open].forEach(k=>localStorage.removeItem(k));location.reload()}
+function bnLogout(){if(confirm('ログアウトする？（チェックの記録は残るよ）')){localStorage.removeItem(LS.pw);PW=null;ENT={};KEYS={};bnClose();$('#app').classList.add('hide');$('#lock').classList.remove('hide');$('#pw').value='';$('#lockMsg').textContent='新しいパスワードを入れてね';scrollTo(0,0)}}
+function bottomHTML(){return `<div class="btmz">
+ <div class="scard"><h4>💾 バックアップ</h4><div class="sh2">チェックと設定をファイルに保存できるよ（パスワードは入らないよ）。</div><div class="two"><button class="btn g sm2" onclick="bnExport()">JSONで書き出し</button><button class="btn g sm2" onclick="bnImport()">JSONを読み込み</button></div></div>
+ <div class="scard"><h4>💌 ゆずに送る・💝 ゆずから受け取る</h4><div class="sh2">今日のチェックが終わったら、ここからゆずに送ってね♡</div>
+ <button class="sendb" onclick="bnSend()">💌 ゆずに送る<small>チェックの結果をGmailで送ってね</small></button><button class="btn m sm2" onclick="bnReload()">💝 ゆずから受け取る（最新のノート）</button></div>
+ <div class="scard"><h4>🔑 ロック</h4><button class="btn g sm2" onclick="bnLogout()">🔑 パスワードを変更/ログアウト</button></div>
+ <div class="scard"><h4>⚠️ データ</h4><div class="two"><button class="btn g sm2" onclick="bnReset()">🧹 チェックをリセット</button><button class="btn d sm2" onclick="bnWipe()">データをすべて消す</button></div></div></div>`}
 function openSet(){sheet(`<h3>⚙️ 設定</h3>
  <div class="scard"><h4>📒 表示</h4>
  <div class="row"><span>⏩ 持ち越しの期間</span><select id="sCarry">${[0,3,7,14,30].map(n=>`<option value="${n}" ${SET.carry==n?'selected':''}>${n?n+'日前まで':'表示しない'}</option>`).join('')}</select></div>
@@ -287,24 +308,11 @@ function openSet(){sheet(`<h3>⚙️ 設定</h3>
  <button class="btn d" id="sWipe">データをすべて消す</button><div class="sh2">このiPhoneのチェックと設定だけを消すよ。ゆずのノート本体は消えないよ。</div></div>
  <button class="btn g" id="sClose">とじる</button>
  <div class="foot">便利ノート バージョン v${VER}・チェックはこのiPhoneの中だけに保存されるよ</div>`);
- const close=()=>$('#ov').classList.add('hide');
+ const close=bnClose;
  $('#sCarry').onchange=e=>{SET.carry=+e.target.value;sv(LS.set,SET);render(true)};
  $('#sNews').onclick=e=>{SET.carryNews=!SET.carryNews;e.target.classList.toggle('on',SET.carryNews);sv(LS.set,SET);render(true)};
- $('#sSend').onclick=()=>{close();bnSend()};
- $('#sReload').onclick=async()=>{ENT={};IDX=await fetchJSON('data/index.json?t='+Date.now());close();await render();toast('ゆずの最新ノートを受け取ったよ💝')};
- $('#sExp').onclick=()=>{const o={app:'benri-note',ver:VER,exported:new Date().toISOString(),data:{}};[LS.chk,LS.set,LS.open].forEach(k=>{const v=localStorage.getItem(k);if(v!=null)o.data[k]=v});
-  const bl=new Blob([JSON.stringify(o,null,1)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(bl);a.download='benri-note-backup-'+jstToday()+'.json';document.body.appendChild(a);a.click();a.remove();toast('書き出したよ💾')};
- $('#sImpB').onclick=()=>$('#sImp').click();
- $('#sImp').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const j=JSON.parse(r.result);if(j.app!=='benri-note'||!j.data)throw 0;
-  if(!confirm('このバックアップを読みこむ？\n（チェックは今のものと合わせるよ。設定はバックアップのものになるよ）'))return;
-  if(j.data[LS.chk]){const c=JSON.parse(j.data[LS.chk]);for(const k in c)if(!CHK[k])CHK[k]=c[k];sv(LS.chk,CHK)}
-  if(j.data[LS.set]){SET=Object.assign(SET,JSON.parse(j.data[LS.set]));sv(LS.set,SET)}
-  if(j.data[LS.open])localStorage.setItem(LS.open,j.data[LS.open]);
-  close();render(true);toast('読みこんだよ✨')}catch(x){alert('便利ノートのバックアップファイルではないみたい')}};r.readAsText(f);e.target.value=''};
- $('#sReset').onclick=()=>{if(confirm('チェックを全部「まだ」にもどす？')){CHK={};sv(LS.chk,CHK);render(true);toast('リセットしたよ')}};
- $('#sWipe').onclick=()=>{if(!confirm('このiPhoneのチェックと設定をすべて消す？'))return;if(!confirm('本当に消していい？もとにもどせないよ（先に書き出しがおすすめ）'))return;
-  [LS.chk,LS.set,LS.open].forEach(k=>localStorage.removeItem(k));location.reload()};
- $('#sLogout').onclick=()=>{if(confirm('ログアウトする？（チェックの記録は残るよ）')){localStorage.removeItem(LS.pw);PW=null;ENT={};KEYS={};close();$('#app').classList.add('hide');$('#lock').classList.remove('hide');$('#pw').value='';$('#lockMsg').textContent='新しいパスワードを入れてね'}};
+ $('#sSend').onclick=()=>{close();bnSend()};$('#sReload').onclick=bnReload;$('#sExp').onclick=bnExport;$('#sImpB').onclick=()=>$('#sImp').click();
+ $('#sImp').onchange=e=>{bnImportFile(e.target.files[0]);e.target.value=''};$('#sReset').onclick=bnReset;$('#sWipe').onclick=bnWipe;$('#sLogout').onclick=bnLogout;
  $('#sClose').onclick=close}
 document.addEventListener('visibilitychange',async()=>{if(document.visibilityState==='visible'&&PW&&IDX){try{const n=await fetchJSON('data/index.json?t='+Date.now());if(n.dates.join()!==IDX.dates.join()){IDX=n;const t=jstToday();if(IDX.dates.includes(t))CUR=t;render();toast('新しいノートが届いたよ📒')}}catch(e){}}});
 if('serviceWorker'in navigator){const hadC=!!navigator.serviceWorker.controller;let rl=0;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(hadC&&!rl){rl=1;location.reload()}});navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>{r.update();document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')r.update().catch(()=>{})})}).catch(()=>{})}
