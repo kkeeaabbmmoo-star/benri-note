@@ -148,6 +148,7 @@ section.carry .cnt{color:#d07a16;border-color:#ffd9a8}
       <button class="ib" id="prev" aria-label="前の日">‹</button>
       <button id="dateBtn">--</button>
       <button class="ib" id="next" aria-label="次の日">›</button>
+      <button class="ib" data-ym-btn aria-label="音楽">🎵</button>
       <button class="ib" id="setBtn" aria-label="設定">⚙️</button>
     </div>
     <div id="prog"><span>✅</span><div class="bar"><i id="pbar"></i></div><span id="ptxt">0/0</span></div>
@@ -158,7 +159,7 @@ section.carry .cnt{color:#d07a16;border-color:#ffd9a8}
 <div id="ov" class="ov hide"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast"></div>
 <script>
-const VER='1.2.2';
+const VER='1.3.0';
 const SEC={health:['🩺','健康ノート'],savings:['🐷','貯金ノート'],news:['📰','ニュース・記事'],pikmin:['🌸','ピクミン'],mail:['📧','メールチェック']};
 const ORDER=['health','savings','news','pikmin','mail'];
 const FLAG={check:'今日はこれを確認して',prio:'これ優先にした方がいいよ',forget:'これ忘れてない？'};
@@ -271,7 +272,7 @@ document.addEventListener('click',ev=>{const t=ev.target.closest('[data-id],[dat
   if(t.id==='dateBtn'){openDates();return}
   if(t.id==='setBtn'){openSet();return}});
 document.addEventListener('toggle',ev=>{const d=ev.target;if(d.matches&&d.matches('details.done')){OPEN[d.dataset.ok]=d.open;sv(LS.open,OPEN)}},true);
-function sheet(h){$('#sheet').innerHTML=h;$('#ov').classList.remove('hide')}
+function sheet(h){$('#sheet').innerHTML=h;$('#ov').classList.remove('hide');if(window.YuzuMusic)YuzuMusic.ui()}
 $('#ov').onclick=e=>{if(e.target.id==='ov')$('#ov').classList.add('hide')};
 function openDates(){sheet(`<h3>📅 日付をえらぶ</h3><div class="dl">${IDX.dates.slice().reverse().map(d=>`<button data-d="${d}" class="${d===CUR?'cur':''}"><span>${md(d)}（${wd(d)}）${d===jstToday()?' 今日':''}</span><span>${d}</span></button>`).join('')}</div><button class="btn g" data-close>とじる</button>`);
   $('#sheet').querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{CUR=b.dataset.d;wxDay=null;$('#ov').classList.add('hide');render();scrollTo(0,0)});$('#sheet').querySelector('[data-close]').onclick=()=>$('#ov').classList.add('hide')}
@@ -299,6 +300,7 @@ function openSet(){sheet(`<h3>⚙️ 設定</h3>
  <div class="scard"><h4>📒 表示</h4>
  <div class="row"><span>⏩ 持ち越しの期間</span><select id="sCarry">${[0,3,7,14,30].map(n=>`<option value="${n}" ${SET.carry==n?'selected':''}>${n?n+'日前まで':'表示しない'}</option>`).join('')}</select></div>
  <div class="row" style="border:0"><span>📰 ニュースも持ち越す</span><button class="tog ${SET.carryNews?'on':''}" id="sNews"></button></div></div>
+ <div class="scard"><h4>🎵 音楽</h4><div class="sh2">ゆずが作ったオリジナル曲だよ♡ 2曲から選べて、日替わりにもできるよ（上の🎵でもON/OFFできるよ）。</div>${window.YuzuMusic?YuzuMusic.cardHTML():''}</div>
  <div class="scard"><h4>💾 バックアップ</h4><div class="sh2">チェックと設定はこのiPhoneの中だけに保存されているよ。ときどき書き出して「ファイル」に保存しておくと安心だよ（パスワードは入らないよ）。</div>
  <button class="btn m" id="sExp">JSONで書き出し</button><button class="btn g" id="sImpB">JSONを読み込み</button><input type="file" id="sImp" accept=".json,application/json" style="display:none"></div>
  <div class="scard"><h4>💌 ゆずに送る・💝 ゆずから受け取る</h4><div class="sh2">今日のチェックが終わったら、ここからゆずに送ってね。「受け取る」でゆずが書いた最新のノートを読みこむよ。</div>
@@ -371,5 +373,6 @@ async function bnSend(){
 
 (async()=>{const p=localStorage.getItem(LS.pw);if(p){$('#lockMsg').textContent='ひらいてるよ…🔑';await tryUnlock(p,true)}})();
 </script>
+<script>window.YM_CFG={onKey:"bn_music_on",trackKey:"bn_music_track",defTrack:"orgel",tracks:{orgel:{len:51.42857142857143},love:{f:"song.mp3",len:40}},locked:()=>{const l=document.getElementById("lock");return!!l&&!l.classList.contains("hide")}};</script><script src="yuzu-music.js"></script>
 </body>
 </html>
