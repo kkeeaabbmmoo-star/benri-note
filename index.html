@@ -292,6 +292,7 @@ function bnWipe(){if(!confirm('このノートに入力した中身をすべて�
 function bnLogout(){if(confirm('ログアウトする？（チェックの記録は残るよ）')){localStorage.removeItem(LS.pw);PW=null;ENT={};KEYS={};bnClose();$('#app').classList.add('hide');$('#lock').classList.remove('hide');$('#pw').value='';$('#lockMsg').textContent='新しいパスワードを入れてね';scrollTo(0,0)}}
 function bottomHTML(){return `<div class="btmz">
  <div class="scard"><h4>💾 バックアップ</h4><div class="sh2">チェックと設定をファイルに保存できるよ（パスワードは入らないよ）。</div><div class="two"><button class="btn g sm2" onclick="bnExport()">JSONで書き出し</button><button class="btn g sm2" onclick="bnImport()">JSONを読み込み</button></div></div>
+ <div data-gy></div>
  <div class="scard"><h4>💌 ゆずに送る・💝 ゆずから受け取る</h4><div class="sh2">今日のチェックが終わったら、ここからゆずに送ってね♡</div>
  <button class="sendb" onclick="bnSend()">💌 ゆずに送る<small>チェックの結果をGmailで送ってね</small></button><button class="btn m sm2" onclick="bnReload()">💝 ゆずから受け取る（最新のノート）</button></div>
  <div class="scard"><h4>🔑 ロック</h4><button class="btn g sm2" onclick="bnLogout()">🔑 パスワードを変更/ログアウト</button></div>
@@ -374,5 +375,6 @@ async function bnSend(){
 (async()=>{const p=localStorage.getItem(LS.pw);if(p){$('#lockMsg').textContent='ひらいてるよ…🔑';await tryUnlock(p,true)}})();
 </script>
 <script>window.YM_CFG={onKey:"bn_music_on",trackKey:"bn_music_track",defTrack:"orgel",tracks:{orgel:{len:51.42857142857143},love:{f:"song.mp3",len:40}},locked:()=>{const l=document.getElementById("lock");return!!l&&!l.classList.contains("hide")}};</script><script src="yuzu-music.js"></script>
+<script>window.GY_CFG={key:"bn_grok_yuzu",theme:{acc:"#d0477a",btn:"linear-gradient(90deg,#ff8fb8,#ff6fa0)"}};</script><script src="grok-yuzu.js"></script>
 </body>
 </html>
