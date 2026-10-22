@@ -367,7 +367,7 @@ async function bnSend(){
     if(!titles)o.ids='short';return o};
   const M=+CUR.slice(5,7),D=+CUR.slice(8);
   const intro=note=>`ゆずへ💌 便利ノートのチェックだよ（${M}/${D}）\n済み ${done.length}/${items.length}・のこり ${todo.length}`+(co.length?`・持ち越し ${co.length}`:'')+(note?`\n${note}`:'');
-  return yuzuSend({subject:`【ゆずに送る】便利ノート ${CUR}`,intro,
+  return yuzuSend({subject:`ゆずとゆいへ 便利ノート ${CUR}`,intro,
     levels:[{data:pack(true,true),note:''},{data:pack(false,true),note:'（項目はIDだけ）'},{data:pack(false,false),note:'（IDだけ・持ち越しなし）'}],
     full:pack(true,true),
     theme:{bg:'#fff',fg:'#2f3a45',acc:'#d0477a',btn:'linear-gradient(90deg,#3cc9a3,#5fd8b6)',btnfg:'#fff',sub:'#ffe3ee'}})}
