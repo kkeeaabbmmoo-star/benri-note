@@ -1,6 +1,6 @@
-const V='benri-v1.6.0';
+const V='benri-v1.6.1';
 const SHELL='benri-shell-'+V, DATA='benri-data-'+V;
-const ASSETS=['./','index.html','manifest.webmanifest','icon-180.png','icon-192.png','icon-512.png','yuzu-music.js','grok-yuzu.js?v=gy2','orgel.mp3','song.mp3'];
+const ASSETS=['./','index.html','manifest.webmanifest','icon-180.png','icon-192.png','icon-512.png','yuzu-music.js','grok-yuzu.js?v=gy3','orgel.mp3','song.mp3'];
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(SHELL).then(c=>c.addAll(ASSETS)))});
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==SHELL&&k!==DATA).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',e=>{if(e.request.url.indexOf('grok-yuzu.json')>=0)return;const u=new URL(e.request.url);if(e.request.method!=='GET'||u.origin!==location.origin)return;
