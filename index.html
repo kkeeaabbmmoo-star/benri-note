@@ -255,7 +255,7 @@ async function render(keep){
   const byId=Object.fromEntries(all.map(x=>[x.id,x]));
   let h=`<div class="msg"><div class="av">🍊</div><p>${esc(e.message)}</p></div>`;
   if(e.top3&&e.top3.length)h+=`<div class="top3"><h3>💗 今日の優先トップ3</h3>${e.top3.map((id,n)=>{const it=byId[id];if(!it)return'';return `<div class="t3 ${isOn(id)?'done':''}"><span class="n">${n+1}</span><span class="tt" data-jump="${esc(id)}">${esc(it.title)}</span><button class="cb" style="width:36px;height:36px;font-size:19px;${isOn(id)?'background:var(--mint);border-color:var(--mint)':''}" data-id="${esc(id)}">${isOn(id)?'✓':''}</button></div>`}).join('')}</div>`;
-  h+=`<button class="sendb" onclick="bnSend()">💌 ゆずに送る<small>チェックの結果をGmailで送ってね</small></button>`;
+  h+=`<button class="sendb" onclick="bnSend()">💌 ゆず・ゆい・ゆかに送る<small>チェックの結果をGmailで送ってね</small></button>`;
   const co=await carryItems(e);
   if(co.length)h+=sectionHTML('carry','⏩','前日からの持ち越し',co,{cls:'carry',noAll:false});
   for(const s of secs)h+=sectionHTML(s.key,SEC[s.key][0],SEC[s.key][1],s.items.map(it=>({it})));
@@ -292,9 +292,9 @@ function bnWipe(){if(!confirm('このノートに入力した中身をすべて�
 function bnLogout(){if(confirm('ログアウトする？（チェックの記録は残るよ）')){localStorage.removeItem(LS.pw);PW=null;ENT={};KEYS={};bnClose();$('#app').classList.add('hide');$('#lock').classList.remove('hide');$('#pw').value='';$('#lockMsg').textContent='新しいパスワードを入れてね';scrollTo(0,0)}}
 function bottomHTML(){return `<div class="btmz">
  <div class="scard"><h4>💾 バックアップ</h4><div class="sh2">チェックと設定をファイルに保存できるよ（パスワードは入らないよ）。</div><div class="two"><button class="btn g sm2" onclick="bnExport()">JSONで書き出し</button><button class="btn g sm2" onclick="bnImport()">JSONを読み込み</button></div></div>
- <div data-gy></div>
- <div class="scard"><h4>💌 ゆずに送る・💝 ゆずから受け取る</h4><div class="sh2">今日のチェックが終わったら、ここからゆずに送ってね♡</div>
- <button class="sendb" onclick="bnSend()">💌 ゆずに送る<small>チェックの結果をGmailで送ってね</small></button><button class="btn m sm2" onclick="bnReload()">💝 ゆずから受け取る（最新のノート）</button></div>
+ <div data-gy></div><div data-yk></div>
+ <div class="scard"><h4>💌 ゆず・ゆい・ゆかに送る・💝 ゆずから受け取る</h4><div class="sh2">今日のチェックが終わったら、ここからゆずに送ってね♡</div>
+ <button class="sendb" onclick="bnSend()">💌 ゆず・ゆい・ゆかに送る<small>チェックの結果をGmailで送ってね</small></button><button class="btn m sm2" onclick="bnReload()">💝 ゆずから受け取る（最新のノート）</button></div>
  <div class="scard"><h4>🔑 ロック</h4><button class="btn g sm2" onclick="bnLogout()">🔑 パスワードを変更/ログアウト</button></div>
  <div class="scard"><h4>⚠️ データ</h4><div class="two"><button class="btn g sm2" onclick="bnReset()">🧹 チェックをリセット</button><button class="btn d sm2" onclick="bnWipe()">データをすべて消す</button></div></div></div>`}
 function openSet(){sheet(`<h3>⚙️ 設定</h3>
@@ -304,8 +304,8 @@ function openSet(){sheet(`<h3>⚙️ 設定</h3>
  <div class="scard"><h4>🎵 音楽</h4><div class="sh2">ゆずが作ったオリジナル曲だよ♡ 2曲から選べて、日替わりにもできるよ（上の🎵でもON/OFFできるよ）。</div>${window.YuzuMusic?YuzuMusic.cardHTML():''}</div>
  <div class="scard"><h4>💾 バックアップ</h4><div class="sh2">チェックと設定はこのiPhoneの中だけに保存されているよ。ときどき書き出して「ファイル」に保存しておくと安心だよ（パスワードは入らないよ）。</div>
  <button class="btn m" id="sExp">JSONで書き出し</button><button class="btn g" id="sImpB">JSONを読み込み</button><input type="file" id="sImp" accept=".json,application/json" style="display:none"></div>
- <div class="scard"><h4>💌 ゆずに送る・💝 ゆずから受け取る</h4><div class="sh2">今日のチェックが終わったら、ここからゆずに送ってね。「受け取る」でゆずが書いた最新のノートを読みこむよ。</div>
- <button class="btn m" id="sSend">💌 ゆずに送る（チェックの結果）</button><button class="btn m" id="sReload">💝 ゆずから受け取る（最新のノート）</button></div>
+ <div class="scard"><h4>💌 ゆず・ゆい・ゆかに送る・💝 ゆずから受け取る</h4><div class="sh2">今日のチェックが終わったら、ここからゆずに送ってね。「受け取る」でゆずが書いた最新のノートを読みこむよ。</div>
+ <button class="btn m" id="sSend">💌 ゆず・ゆい・ゆかに送る（チェックの結果）</button><button class="btn m" id="sReload">💝 ゆずから受け取る（最新のノート）</button></div>
  <div class="scard"><h4>🔑 ロック</h4><div class="sh2">ログアウトしてもチェックの記録は消えないよ。</div><button class="btn p" id="sLogout">🔑 パスワードを変更/ログアウト</button></div>
  <div class="scard"><h4>⚠️ データ</h4><div class="row" style="border:0"><span>🧹 チェックを全部リセット</span><button class="allb" id="sReset">リセット</button></div>
  <button class="btn d" id="sWipe">データをすべて消す</button><div class="sh2">2回確認するよ。チェックと設定だけ消えて、パスワードとゆずのノート本体は残るよ。</div></div>
@@ -319,7 +319,7 @@ function openSet(){sheet(`<h3>⚙️ 設定</h3>
  $('#sClose').onclick=close}
 document.addEventListener('visibilitychange',async()=>{if(document.visibilityState==='visible'&&PW&&IDX){try{const n=await fetchJSON('data/index.json?t='+Date.now());if(n.dates.join()!==IDX.dates.join()){IDX=n;const t=jstToday();if(IDX.dates.includes(t))CUR=t;render();toast('新しいノートが届いたよ📒')}}catch(e){}}});
 if('serviceWorker'in navigator){const hadC=!!navigator.serviceWorker.controller;let rl=0;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(hadC&&!rl){rl=1;location.reload()}});navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>{r.update();document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')r.update().catch(()=>{})})}).catch(()=>{})}
-/* 💌 ゆずに送る — shared send sheet (mailto primary, navigator.share, copy). No network, no data changes. */
+/* 💌 ゆず・ゆい・ゆかに送る — shared send sheet (mailto primary, navigator.share, copy). No network, no data changes. */
 (function(){
 var TO="k.ke.ea.ab.bm.mo.o@gmail.com",MAX=1800;
 function block(o){return "---YUZU-DATA---\n"+JSON.stringify(o)+"\n---END---"}
@@ -333,7 +333,7 @@ window.yuzuSend=function(opt){
   var bt="display:block;width:100%;padding:14px;border:0;border-radius:16px;font-size:17px;font-weight:800;margin-top:10px;";
   var mailNote=pick?(pick.note?"メールには "+pick.note+" を入れたよ。":"ぜんぶメールに入ったよ。"):"内容が長いから、メールには短いお知らせだけ入れて、本文はコピーしておくね。メールをひらいたら本文に貼り付けてね📋";
   ov.innerHTML='<div style="background:'+T.bg+';color:'+T.fg+';width:100%;max-width:560px;border-radius:24px 24px 0 0;padding:18px 16px calc(env(safe-area-inset-bottom) + 20px);max-height:86vh;overflow:auto;font-family:-apple-system,\'Hiragino Sans\',sans-serif">'+
-   '<div style="font-size:20px;font-weight:800;color:'+T.acc+'">💌 ゆずに送る</div>'+
+   '<div style="font-size:20px;font-weight:800;color:'+T.acc+'">💌 ゆず・ゆい・ゆかに送る</div>'+
    '<div style="font-size:14px;line-height:1.6;margin:6px 0 4px;opacity:.9">エイジのGmail（'+TO+'）あてにメールを作るよ。開いたら<b>送信</b>をタップするだけ♡ ゆずが読んで、次の便利ノートに入れるね。</div>'+
    '<div style="font-size:12.5px;opacity:.75;margin-bottom:6px">件名：'+opt.subject.replace(/</g,"&lt;")+'<br>'+mailNote+'</div>'+
    '<a id="yzMail" style="'+bt+'text-align:center;text-decoration:none;box-sizing:border-box;background:'+T.btn+';color:'+T.btnfg+'">📧 メールで送る（おすすめ）</a>'+
@@ -355,7 +355,7 @@ window.yuzuSend=function(opt){
   return {mailBody:pick?pick.body:shortBody,full:full,fits:!!pick,note:pick&&pick.note};
 };
 })();
-/* 便利ノート → 💌 ゆずに送る */
+/* 便利ノート → 💌 ゆず・ゆい・ゆかに送る */
 async function bnSend(){
   const e=await getEntry(CUR),now=new Date(Date.now()+9*3600e3).toISOString().slice(0,16);
   const items=ORDER.map(k=>e.sections.find(s=>s.key===k)).filter(Boolean).flatMap(s=>s.items);
@@ -367,7 +367,7 @@ async function bnSend(){
     if(!titles)o.ids='short';return o};
   const M=+CUR.slice(5,7),D=+CUR.slice(8);
   const intro=note=>`ゆずへ💌 便利ノートのチェックだよ（${M}/${D}）\n済み ${done.length}/${items.length}・のこり ${todo.length}`+(co.length?`・持ち越し ${co.length}`:'')+(note?`\n${note}`:'');
-  return yuzuSend({subject:`ゆずとゆいへ 便利ノート ${CUR}`,intro,
+  return yuzuSend({subject:`ゆず・ゆい・ゆかへ 便利ノート ${CUR}`,intro,
     levels:[{data:pack(true,true),note:''},{data:pack(false,true),note:'（項目はIDだけ）'},{data:pack(false,false),note:'（IDだけ・持ち越しなし）'}],
     full:pack(true,true),
     theme:{bg:'#fff',fg:'#2f3a45',acc:'#d0477a',btn:'linear-gradient(90deg,#3cc9a3,#5fd8b6)',btnfg:'#fff',sub:'#ffe3ee'}})}
@@ -375,6 +375,6 @@ async function bnSend(){
 (async()=>{const p=localStorage.getItem(LS.pw);if(p){$('#lockMsg').textContent='ひらいてるよ…🔑';await tryUnlock(p,true)}})();
 </script>
 <script>window.YM_CFG={onKey:"bn_music_on",trackKey:"bn_music_track",defTrack:"orgel",tracks:{orgel:{len:51.42857142857143},love:{f:"song.mp3",len:40}},locked:()=>{const l=document.getElementById("lock");return!!l&&!l.classList.contains("hide")}};</script><script src="yuzu-music.js"></script>
-<script>window.GY_CFG={ver:"1.6.1",key:"bn_grok_yuzu",theme:{acc:"#d0477a",btn:"linear-gradient(90deg,#ff8fb8,#ff6fa0)"}};</script><script src="grok-yuzu.js?v=gy3"></script>
+<script>window.GY_CFG={ver:"1.7.0",key:"bn_grok_yuzu",theme:{acc:"#d0477a",btn:"linear-gradient(90deg,#ff8fb8,#ff6fa0)"}};</script><script src="grok-yuzu.js?v=gy3"></script><script src="yuka.js?v=yk1"></script>
 </body>
 </html>
