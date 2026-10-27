@@ -94,6 +94,7 @@ section.carry .cnt{color:#d07a16;border-color:#ffd9a8}
 .bd{font-size:11.5px;font-weight:700;border-radius:999px;padding:2px 8px;white-space:nowrap}
 .f-check{background:#e3f1ff;color:#2f7fd1}
 .f-prio{background:#ffe0ea;color:#d63d74}
+.fgb{border:1px solid #e3d7f0;background:#faf6ff;color:#8a63b8;border-radius:12px;font-size:12px;padding:2px 9px;margin-left:auto}
 .f-forget{background:#fff0dc;color:#c66d0b}
 .p-high{background:#ff7aa8;color:#fff}
 .from{background:#f1f3f5;color:#6b7a86}
@@ -159,15 +160,16 @@ section.carry .cnt{color:#d07a16;border-color:#ffd9a8}
 <div id="ov" class="ov hide"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast"></div>
 <script>
-const VER='1.3.0';
+const VER='1.4.0';
 const SEC={health:['🩺','健康ノート'],savings:['🐷','貯金ノート'],news:['📰','ニュース・記事'],pikmin:['🌸','ピクミン'],mail:['📧','メールチェック']};
 const ORDER=['health','savings','news','pikmin','mail'];
 const FLAG={check:'今日はこれを確認して',prio:'これ優先にした方がいいよ',forget:'これ忘れてない？'};
-const LS={pw:'bn_pw',chk:'bn_chk',open:'bn_open',set:'bn_set'};
+const LS={pw:'bn_pw',chk:'bn_chk',open:'bn_open',set:'bn_set',fgt:'bn_forget'};
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const ld=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}};
 const sv=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+let FGT=ld('bn_forget',{});
 let CHK=ld(LS.chk,{}), OPEN=ld(LS.open,{}), SET=Object.assign({carry:7,carryNews:true},ld(LS.set,{}));
 let IDX=null, PW=null, CUR=null, ENT={}, KEYS={}, wxDay=null, wxOpen=false;
 const jstToday=()=>new Date(Date.now()+9*3600e3).toISOString().slice(0,10);
@@ -201,6 +203,8 @@ async function tryUnlock(pw,silent){
 $('#unlock').onclick=()=>{const v=norm($('#pw').value);if(v)tryUnlock(v)};
 $('#pw').addEventListener('keydown',e=>{if(e.key==='Enter')$('#unlock').click()});
 function isOn(id){return !!CHK[id]}
+const isF=id=>!!FGT[id];
+function forget(id,title){FGT[id]={t:Date.now(),title:title||''};sv(LS.fgt,FGT);render(true);toast('忘れたよ🫧 もう出てこないからね')}
 function toggle(id){if(CHK[id])delete CHK[id];else CHK[id]=Date.now();sv(LS.chk,CHK);render(true);if(CHK[id])toast('やったね♡ チェックしたよ✅')}
 function itemHTML(it,opt={}){
   const on=isOn(it.id);let b='';
@@ -209,9 +213,11 @@ function itemHTML(it,opt={}){
   if(opt.from)b+=`<span class="bd from">${esc(opt.from)}</span>`;
   if(it.link)b+=`<a class="lk" href="${esc(it.link)}" target="_blank" rel="noopener">ひらく↗</a>`;
   if(on)b+=`<span class="st">${new Date(CHK[it.id]).toLocaleString('ja-JP',{timeZone:'Asia/Tokyo',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})} ✓</span>`;
+  if(!on)b+=`<button class="fgb" data-fgt="${esc(it.id)}" data-ft="${esc(it.title)}">🫧 忘れる</button>`;
   return `<div class="it ${on?'on':''}" id="i-${esc(it.id)}${opt.from?'-c':''}"><button class="cb" data-id="${esc(it.id)}" aria-label="${on?'まだにもどす':'やった'}">${on?'✓':''}</button>
   <div class="ib2"><div class="ttl">${esc(it.title)}</div>${it.detail?`<div class="dt">${esc(it.detail)}</div>`:''}${b?`<div class="meta">${b}</div>`:''}</div></div>`}
 function sectionHTML(key,emoji,title,items,opt={}){
+  items=items.filter(x=>!isF(x.it.id));
   const todo=items.filter(x=>!isOn(x.it.id)),done=items.filter(x=>isOn(x.it.id));
   const n=items.length,c=done.length,ok='o-'+(opt.okey||key);
   let h=`<section class="sec ${opt.cls||''}" id="s-${key}"><div class="sh"><span class="e">${emoji}</span><h2>${title}</h2>`;
@@ -250,11 +256,11 @@ async function render(keep){
   $('#dateBtn').innerHTML=`<b>${md(CUR)}(${wd(CUR)})</b><small>${CUR===jstToday()?'<span style="color:#e0568a">今日</span>':'日付'} ▾</small>`;
   renderWx(e);
   const secs=ORDER.map(k=>e.sections.find(s=>s.key===k)).filter(Boolean);
-  const all=secs.flatMap(s=>s.items);const c=all.filter(x=>isOn(x.id)).length;
+  const all=secs.flatMap(s=>s.items).filter(x=>!isF(x.id));const c=all.filter(x=>isOn(x.id)).length;
   $('#pbar').style.width=(all.length?c/all.length*100:0)+'%';$('#ptxt').textContent=`${c}/${all.length}`;
   const byId=Object.fromEntries(all.map(x=>[x.id,x]));
   let h=`<div class="msg"><div class="av">🍊</div><p>${esc(e.message)}</p></div>`;
-  if(e.top3&&e.top3.length)h+=`<div class="top3"><h3>💗 今日の優先トップ3</h3>${e.top3.map((id,n)=>{const it=byId[id];if(!it)return'';return `<div class="t3 ${isOn(id)?'done':''}"><span class="n">${n+1}</span><span class="tt" data-jump="${esc(id)}">${esc(it.title)}</span><button class="cb" style="width:36px;height:36px;font-size:19px;${isOn(id)?'background:var(--mint);border-color:var(--mint)':''}" data-id="${esc(id)}">${isOn(id)?'✓':''}</button></div>`}).join('')}</div>`;
+  if(e.top3&&e.top3.length)h+=`<div class="top3"><h3>💗 今日の優先トップ3</h3>${e.top3.map((id,n)=>{const it=byId[id];if(!it||isF(id))return'';return `<div class="t3 ${isOn(id)?'done':''}"><span class="n">${n+1}</span><span class="tt" data-jump="${esc(id)}">${esc(it.title)}</span><button class="cb" style="width:36px;height:36px;font-size:19px;${isOn(id)?'background:var(--mint);border-color:var(--mint)':''}" data-id="${esc(id)}">${isOn(id)?'✓':''}</button></div>`}).join('')}</div>`;
   h+=`<button class="sendb" onclick="bnSend()">💌 ゆず・由依・まいに送る<small>チェックの結果をGmailで送ってね</small></button>`;
   const co=await carryItems(e);
   if(co.length)h+=sectionHTML('carry','⏩','前日からの持ち越し',co,{cls:'carry',noAll:false});
@@ -262,7 +268,8 @@ async function render(keep){
   h+=bottomHTML();
   h+=`<div class="foot">便利ノート v${VER}・ゆずより愛をこめて💕<br>${e.generated?'作成 '+esc(e.generated.replace('T',' ').slice(0,16)):''}</div>`;
   $('#main').innerHTML=h;if(keep)scrollTo(0,y)}
-document.addEventListener('click',ev=>{const t=ev.target.closest('[data-id],[data-all],[data-jump],[data-wxd],#wx,#prev,#next,#dateBtn,#setBtn');if(!t)return;
+document.addEventListener('click',ev=>{const t=ev.target.closest('[data-fgt],[data-id],[data-all],[data-jump],[data-wxd],#wx,#prev,#next,#dateBtn,#setBtn');if(!t)return;
+  if(t.dataset.fgt){forget(t.dataset.fgt,t.dataset.ft);return}
   if(t.dataset.id){toggle(t.dataset.id);return}
   if(t.dataset.all){const k=t.dataset.all;const sec=t.closest('section');const ids=[...sec.querySelectorAll('.items .cb')].map(b=>b.dataset.id);ids.forEach(id=>{if(!CHK[id])CHK[id]=Date.now()});sv(LS.chk,CHK);render(true);toast(`${ids.length}こまとめてチェックしたよ✅`);return}
   if(t.dataset.jump){const el=document.getElementById('i-'+t.dataset.jump);if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.classList.add('flash');setTimeout(()=>el.classList.remove('flash'),1300)}return}
@@ -278,7 +285,7 @@ function openDates(){sheet(`<h3>📅 日付をえらぶ</h3><div class="dl">${ID
   $('#sheet').querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{CUR=b.dataset.d;wxDay=null;$('#ov').classList.add('hide');render();scrollTo(0,0)});$('#sheet').querySelector('[data-close]').onclick=()=>$('#ov').classList.add('hide')}
 const bnClose=()=>$('#ov').classList.add('hide');
 async function bnReload(){ENT={};IDX=await fetchJSON('data/index.json?t='+Date.now());bnClose();await render();toast('ゆずの最新ノートを受け取ったよ💝')}
-function bnExport(){const o={app:'benri-note',ver:VER,exported:new Date().toISOString(),data:{}};[LS.chk,LS.set,LS.open].forEach(k=>{const v=localStorage.getItem(k);if(v!=null)o.data[k]=v});
+function bnExport(){const o={app:'benri-note',ver:VER,exported:new Date().toISOString(),data:{}};[LS.chk,LS.set,LS.open,LS.fgt].forEach(k=>{const v=localStorage.getItem(k);if(v!=null)o.data[k]=v});
   const bl=new Blob([JSON.stringify(o,null,1)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(bl);a.download='benri-note-backup-'+jstToday()+'.json';document.body.appendChild(a);a.click();a.remove();toast('書き出したよ💾')}
 function bnParse(t){t=String(t||'').replace(/^\uFEFF/,'').replace(/[\u201C\u201D]/g,'"').replace(/\u00A0/g,' ').trim();let j;try{j=JSON.parse(t)}catch(e){const a=t.indexOf('{'),b=t.lastIndexOf('}');if(a<0||b<=a)throw new Error('中にJSONが見つからない（ファイルの形式がちがうかも）');j=JSON.parse(t.slice(a,b+1))}for(let i=0;i<3&&typeof j==='string';i++){try{j=JSON.parse(j.trim())}catch(e){break}}if(Array.isArray(j))j=j[0];return j}
 function bnImportFile(f){if(!f)return;const r=new FileReader();r.onload=()=>{let j;try{j=bnParse(r.result)}catch(x){alert('便利ノートのバックアップが読めなかったよ🥺\n理由: '+(x&&x.message||'JSONとして読めない')+'\nファイル: '+(f.name||'?'));return}
@@ -287,6 +294,7 @@ function bnImportFile(f){if(!f)return;const r=new FileReader();r.onload=()=>{let
   const c=g(LS.chk),st=g(LS.set),op=d[LS.open];if(!c&&!st&&op==null)throw new Error('便利ノートのチェック記録が入ってない');
   if(!confirm('このバックアップを読みこむ？\n（今のチェックは消さずに、足りない分だけ足すよ）'))return;
   if(c&&typeof c==='object'){for(const k in c)if(!CHK[k])CHK[k]=c[k];sv(LS.chk,CHK)}
+  {const fg=g(LS.fgt);if(fg&&typeof fg==='object'){for(const k in fg)if(!FGT[k])FGT[k]=fg[k];sv(LS.fgt,FGT)}}
   if(st&&typeof st==='object'){for(const k in st)if(SET[k]==null)SET[k]=st[k];sv(LS.set,SET)}
   if(op!=null&&localStorage.getItem(LS.open)==null)localStorage.setItem(LS.open,typeof op==='string'?op:JSON.stringify(op));
   bnClose();render(true);toast('読みこんだよ✨')}catch(x){alert('便利ノートのバックアップとして読めなかったよ🥺\n理由: '+(x&&x.message||x))}};r.readAsText(f)}
@@ -362,12 +370,12 @@ window.yuzuSend=function(opt){
 /* 便利ノート → 💌 ゆず・由依・まいに送る */
 async function bnSend(){
   const e=await getEntry(CUR),now=new Date(Date.now()+9*3600e3).toISOString().slice(0,16);
-  const items=ORDER.map(k=>e.sections.find(s=>s.key===k)).filter(Boolean).flatMap(s=>s.items);
+  const items=ORDER.map(k=>e.sections.find(s=>s.key===k)).filter(Boolean).flatMap(s=>s.items).filter(x=>!isF(x.id));
   const short=id=>id.startsWith(CUR+'-')?id.slice(CUR.length+1):id;
   const done=items.filter(x=>isOn(x.id)),todo=items.filter(x=>!isOn(x.id));
-  const co=(await carryItems(e)).map(x=>x.it).filter(x=>!isOn(x.id));
+  const co=(await carryItems(e)).map(x=>x.it).filter(x=>!isOn(x.id)&&!isF(x.id));
   const pack=(titles,withCarry)=>{const f=x=>titles?[short(x.id),x.title]:short(x.id);
-    const o={app:'benri',v:1,date:CUR,sent:now,done:done.map(f),todo:todo.map(f)};if(withCarry)o.carry=co.map(x=>titles?[x.id,x.title]:x.id);
+    const o={app:'benri',v:1,date:CUR,sent:now,done:done.map(f),todo:todo.map(f)};const fg=Object.entries(FGT).map(([id,v])=>titles?[id,v.title]:id);if(fg.length)o.forgot=fg;if(withCarry)o.carry=co.map(x=>titles?[x.id,x.title]:x.id);
     if(!titles)o.ids='short';return o};
   const M=+CUR.slice(5,7),D=+CUR.slice(8);
   const intro=note=>`ゆずへ💌 便利ノートのチェックだよ（${M}/${D}）\n済み ${done.length}/${items.length}・のこり ${todo.length}`+(co.length?`・持ち越し ${co.length}`:'')+(note?`\n${note}`:'');

@@ -45,8 +45,21 @@ def fix_yui(it):
     d = d.replace("（中では前の名前で名乗ってるね）", "")
     it["detail"] = d
 
+MUTED = "/workspace/benri-note-secret/muted.json"
+
+def apply_muted(e):
+    """Drop items matching muted.json keywords (never include/report again)."""
+    if not os.path.exists(MUTED): return
+    kws = [k.lower() for it in json.load(open(MUTED)).get("items", []) for k in it.get("keywords", []) if k]
+    hit = lambda it: any(k in " ".join(str(it.get(f, "")) for f in ("title", "detail", "slug", "id")).lower() for k in kws)
+    for sec in e["sections"]:
+        drop = [it for it in sec["items"] if hit(it)]
+        for it in drop: print("muted:", it.get("title"), file=sys.stderr)
+        sec["items"] = [it for it in sec["items"] if not hit(it)]
+
 def normalize(e):
     date = e["date"]; datetime.date.fromisoformat(date)
+    apply_muted(e)
     seen = set()
     for sec in e["sections"]:
         if sec["key"] not in SECTIONS: sys.exit(f"unknown section {sec['key']}")
@@ -61,7 +74,7 @@ def normalize(e):
     for t in e.get("top3", []):
         if isinstance(t, str):  # "section/slug" or full id
             t = t if t.startswith(date) else f"{date}-{t.replace('/', '-')}"
-            if t not in seen: sys.exit(f"top3 ref not found: {t}")
+            if t not in seen: print(f"top3 dropped (muted/missing): {t}", file=sys.stderr); continue
             top.append(t)
     e["top3"] = top
     return e
