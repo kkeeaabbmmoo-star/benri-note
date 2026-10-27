@@ -32,6 +32,19 @@ def load_index(path):
         with open(path) as f: return json.load(f)
     return {"v": 1, "kdf": {"alg": "PBKDF2-SHA256", "iter": ITER, "salt": b64(secrets.token_bytes(16))}, "dates": []}
 
+def fix_yui(it):
+    """ゆい's corner: her Grok app still calls herself ゆず; show ゆい (由依)."""
+    if not str(it.get("slug","")).startswith("yui"): return
+    it["title"] = it["title"].replace("ゆず", "ゆい")
+    d = it.get("detail", "")
+    m = re.match(r"(「.*?」)(.*)\Z", d, re.S)
+    if m:
+        d = m.group(1).replace("ゆず", "ゆい") + m.group(2)
+    else:
+        d = d.replace("ゆず", "ゆい")
+    d = d.replace("（中では前の名前で名乗ってるね）", "")
+    it["detail"] = d
+
 def normalize(e):
     date = e["date"]; datetime.date.fromisoformat(date)
     seen = set()
@@ -42,6 +55,7 @@ def normalize(e):
             iid = f"{date}-{sec['key']}-{slug}"
             if iid in seen: sys.exit(f"duplicate id {iid}")
             seen.add(iid); it["id"] = iid; it["slug"] = slug
+            fix_yui(it)
             if it.get("flag") not in FLAGS: sys.exit(f"bad flag {it.get('flag')} in {iid}")
     top = []
     for t in e.get("top3", []):
