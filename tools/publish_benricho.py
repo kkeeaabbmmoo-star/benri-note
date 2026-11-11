@@ -18,8 +18,9 @@ def mute(xs):
     e={'sections':[{'items':[{'title':x} for x in xs]}]};apply_muted(e);return [i['title'] for i in e['sections'][0]['items']]
 now=datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=9))).isoformat(timespec='minutes')
 B={'v':1,'generated':now,'call':mute(get('今朝')),'rem':mute(get('予約')),'dated':[[k,mute(v)] for k,v in dated],
-   'pik':mute([i for _,v in dated for i in v if '【ピクミン】' in i]),'sites':mute(get('フレンド'))}
-print(f"便利帳: 通話{len(B['call'])} 予約{len(B['rem'])} 日付{len(B['dated'])} ピクミン{len(B['pik'])} サイト{len(B['sites'])}")
+   'pik':mute([i for _,v in dated for i in v if '【ピクミン】' in i]),'sites':mute(get('フレンド')),
+   'roles':mute(get('GrokBot'))}
+print(f"便利帳: 通話{len(B['call'])} 予約{len(B['rem'])} 日付{len(B['dated'])} ピクミン{len(B['pik'])} サイト{len(B['sites'])} 役割{len(B['roles'])}")
 if '--dry-run' in a:sys.exit()
 idx=load_index(os.path.join(REPO,'data','index.json'));pw=open(PF).read().strip()
 salt=base64.b64decode(idx['kdf']['salt']);iv=secrets.token_bytes(12);aad='benri-note:benricho'

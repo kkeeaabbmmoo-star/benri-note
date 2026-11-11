@@ -1,4 +1,4 @@
-const V='benri-v1.10.3';
+const V='benri-v1.10.4';
 const SHELL='benri-shell-'+V, DATA='benri-data-'+V;
 const ASSETS=['./','index.html','manifest.webmanifest','icon-180.png','icon-192.png','icon-512.png','yuzu-music.js','nav.js?v=nv4','sent-status.js?v=ss1','backup.js?v=bk4','orgel.mp3','song.mp3'];
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(SHELL).then(c=>c.addAll(ASSETS)))});
